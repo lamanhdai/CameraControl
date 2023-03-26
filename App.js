@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Camera, CameraType } from 'expo-camera';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+
+const { width } = Dimensions.get('window');
+const qrSize = width * 0.7;
 
 export default function App() {
   const [openedCamera, setOpenedCamera] = useState(false);
@@ -38,9 +40,11 @@ export default function App() {
       {openedCamera&&
         <BarCodeScanner
           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={StyleSheet.absoluteFillObject}
+          style={[StyleSheet.absoluteFillObject, styles.container]}
           barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
-        />
+        >
+          <Text style={styles.description}>Scan your QR code</Text>
+        </BarCodeScanner>
       }
       {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
       <View style={styles.button}><Button title={'Tap to open camera'} onPress={openCamera}/></View>
@@ -52,11 +56,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems:'flex-end',
   },
   camera: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
   },
   cameraContainer: {
     width: 200,
@@ -68,6 +74,13 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   button: {
-    marginTop: 50,
-  }
+    flex: 1
+  },
+  description: {
+    fontSize: 20,
+    marginTop: '10%',
+    textAlign: 'center',
+    width: '70%',
+    color: 'white',
+  },
 });
