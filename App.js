@@ -40,18 +40,26 @@ export default function App() {
       {openedCamera&&
         <BarCodeScanner
           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={[StyleSheet.absoluteFillObject, styles.container]}
-          barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
+          style={[StyleSheet.absoluteFillObject, styles.camera]}
         >
-          <Text style={styles.description}>Scan your QR code</Text>
+          {/* <View style={styles.layerTop}>
+            <Text style={styles.description}>Scan your QR code</Text>
+          </View> */}
+          <View style={styles.layerCenter}>
+            <View style={styles.layerTopLeft} />
+            <View style={styles.layerTopRight} />
+            <View style={styles.layerBottomLeft} />
+            <View style={styles.layerBottomRight} />
+          </View>
         </BarCodeScanner>
       }
       {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
-      <View style={styles.button}><Button title={'Tap to open camera'} onPress={openCamera}/></View>
+      {!openedCamera&&<View style={styles.button}><Button title={'Tap to open camera'} onPress={openCamera}/></View>}
     </View>
   );
 }
 
+const opacity = "rgba(0, 0, 0, .8)";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -61,12 +69,7 @@ const styles = StyleSheet.create({
   },
   camera: {
     flex: 1,
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-  },
-  cameraContainer: {
-    width: 200,
-    height: 200,
+    flexDirection: 'column'
   },
   text: {
     fontSize: 24,
@@ -82,5 +85,48 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     width: '70%',
     color: 'white',
+  },
+  layerTop: {
+    flex: 2
+  },
+  layerCenter: {
+    flex: 4,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    height: '50%'
+  },
+  layerTopLeft: {
+    flex: 1,
+    borderTopColor: 'white',
+    borderTopWidth: 5,
+    borderLeftColor: 'white',
+    borderLeftWidth: 5,
+    height: '100%',
+    marginRight: 20
+  },
+  layerTopRight: {
+    flex: 1,
+    backgroundColor: opacity,
+    borderTopColor: 'white',
+    borderTopWidth: 5,
+    borderRightColor: 'white',
+    borderRightWidth: 5,
+    height: '100%',
+    marginLeft: 20
+  },
+  layerBottomLeft: {
+    flex: 1,
+    borderBottomColor: 'white',
+    borderBottomWidth: 5,
+    borderLeftColor: 'white',
+    borderLeftWidth: 5,
+    height: '100%',
+    marginRight: 20
+  },
+  layerBottomRight: {
+    flex: 1
+  },
+  layerBottom: {
+    flex: 2
   },
 });
