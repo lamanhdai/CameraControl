@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
-import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
+import { useState, useEffect, useRef } from 'react';
+import { Button, StyleSheet, Text, View, Dimensions, Animated } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 
+import EdgeQRCode from './EdgeQRCode';
+
 const { width } = Dimensions.get('window');
-const qrSize = width * 0.7;
 
 export default function App() {
   const [openedCamera, setOpenedCamera] = useState(false);
-
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
+  const [sizeQrCode, setSizeQrCode] = useState({width: 0, height: 0})
+  const scannerLine = useRef(new Animated.Value(0)).current;
+  console.log(scannerLine)
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -19,6 +22,20 @@ export default function App() {
 
     getBarCodeScannerPermissions();
   }, []);
+
+  useEffect(() => {
+    updateAnimationScanLine();
+  }, []);
+
+  const updateAnimationScanLine = () => {
+    scannerLine.setValue(0);
+    Animated.timing(scannerLine, {
+      toValue: 1,
+      duration: 8000,
+      useNativeDriver: false,
+    }).start(() => updateAnimationScanLine());
+  }
+
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
     alert(`Bar code with type ${type} and data ${data} has been scanned!`);
@@ -35,6 +52,17 @@ export default function App() {
     setOpenedCamera(true);
   }
 
+  const onLayoutView = (event) => {
+    const { height, width } = event.nativeEvent.layout
+    setSizeQrCode({ width: width, height: height });
+  }
+
+  const transformLine = scannerLine.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, sizeQrCode?.height],
+  });
+  console.log(transformLine)
+
   return (
     <View style={styles.container}>
       {openedCamera&&
@@ -42,15 +70,26 @@ export default function App() {
           onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
           style={[StyleSheet.absoluteFillObject, styles.camera]}
         >
-          {/* <View style={styles.layerTop}>
-            <Text style={styles.description}>Scan your QR code</Text>
-          </View> */}
+          <View style={styles.layerTop}/>
           <View style={styles.layerCenter}>
-            <View style={styles.layerTopLeft} />
-            <View style={styles.layerTopRight} />
-            <View style={styles.layerBottomLeft} />
-            <View style={styles.layerBottomRight} />
+            <View style={styles.layerLeft}/>
+            <View style={styles.layerFocus} onLayout={onLayoutView}>
+              <EdgeQRCode position={'topLeft'}/>
+              <EdgeQRCode position={'topRight'}/>
+              <Animated.View
+                  style={[
+                    {
+                      transform: [{ translateY: transformLine }],
+                    },
+                    styles.scannerLine,
+                  ]}
+                />
+              <EdgeQRCode position={'bottomLeft'}/>
+              <EdgeQRCode position={'bottomRight'}/>
+            </View>
+            <View style={styles.layerRight}/>
           </View>
+          <View style={styles.layerBottom}/>
         </BarCodeScanner>
       }
       {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
@@ -87,46 +126,31 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   layerTop: {
-    flex: 2
+    flex: 1,
+    backgroundColor: opacity
+  },
+  layerRight: {
+    flex: 1,
+    backgroundColor: opacity
   },
   layerCenter: {
-    flex: 4,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    height: '50%'
-  },
-  layerTopLeft: {
     flex: 1,
-    borderTopColor: 'white',
-    borderTopWidth: 5,
-    borderLeftColor: 'white',
-    borderLeftWidth: 5,
-    height: '100%',
-    marginRight: 20
+    flexDirection: 'row'
   },
-  layerTopRight: {
+  layerFocus: {
     flex: 1,
-    backgroundColor: opacity,
-    borderTopColor: 'white',
-    borderTopWidth: 5,
-    borderRightColor: 'white',
-    borderRightWidth: 5,
-    height: '100%',
-    marginLeft: 20
-  },
-  layerBottomLeft: {
-    flex: 1,
-    borderBottomColor: 'white',
-    borderBottomWidth: 5,
-    borderLeftColor: 'white',
-    borderLeftWidth: 5,
-    height: '100%',
-    marginRight: 20
-  },
-  layerBottomRight: {
-    flex: 1
+    position: 'relative',
+    borderWidth: 0.5,
+    borderColor: '#fff',
+    borderRadius: 4
   },
   layerBottom: {
-    flex: 2
+    flex: 1,
+    backgroundColor: opacity
   },
+  layerLeft: {
+    flex: 1,
+    backgroundColor: opacity
+  },
+  scannerLine: { height: 2, backgroundColor: '#fff' },
 });
