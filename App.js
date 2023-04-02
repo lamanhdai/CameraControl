@@ -12,7 +12,10 @@ export default function App() {
   const [scanned, setScanned] = useState(false);
   const [sizeQrCode, setSizeQrCode] = useState({width: 0, height: 0})
   const scannerLine = useRef(new Animated.Value(0)).current;
-  console.log(scannerLine)
+  const [X, setX] = useState(0);
+  const [Y, setY] = useState(0);
+  const [width, setWidth] = useState(0);
+  const [height, setHeight] = useState(0);
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -36,9 +39,14 @@ export default function App() {
     }).start(() => updateAnimationScanLine());
   }
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = ({ type, data, bounds }) => {
     setScanned(true);
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    const {origin, size} = bounds;
+    setX(origin.x)
+    setY(origin.y)
+    setWidth(size.width)
+    setHeight(size.height)
+    // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
   };
 
   if (hasPermission === null) {
@@ -67,29 +75,35 @@ export default function App() {
     <View style={styles.container}>
       {openedCamera&&
         <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          // onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          onBarCodeScanned={handleBarCodeScanned}
           style={[StyleSheet.absoluteFillObject, styles.camera]}
         >
-          <View style={styles.layerTop}/>
+          {/* <View style={styles.layerTop}/> */}
           <View style={styles.layerCenter}>
-            <View style={styles.layerLeft}/>
+            {/* <View style={styles.layerLeft}/> */}
             <View style={styles.layerFocus} onLayout={onLayoutView}>
-              <EdgeQRCode position={'topLeft'}/>
-              <EdgeQRCode position={'topRight'}/>
+              <EdgeQRCode position={'topLeft'} data={{X,Y,width, height}}/>
+              <EdgeQRCode position={'topRight'} data={{X,Y,width, height}}/>
               <Animated.View
                   style={[
                     {
                       transform: [{ translateY: transformLine }],
                     },
                     styles.scannerLine,
+                    {
+                      width: width,
+                      left: X,
+                      top: Y
+                    }
                   ]}
                 />
-              <EdgeQRCode position={'bottomLeft'}/>
-              <EdgeQRCode position={'bottomRight'}/>
+              <EdgeQRCode position={'bottomLeft'} data={{X,Y,width, height}}/>
+              <EdgeQRCode position={'bottomRight'} data={{X,Y,width, height}}/>
             </View>
-            <View style={styles.layerRight}/>
+            {/* <View style={styles.layerRight}/> */}
           </View>
-          <View style={styles.layerBottom}/>
+          {/* <View style={styles.layerBottom}/> */}
         </BarCodeScanner>
       }
       {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
@@ -140,9 +154,9 @@ const styles = StyleSheet.create({
   layerFocus: {
     flex: 1,
     position: 'relative',
-    borderWidth: 0.5,
-    borderColor: '#fff',
-    borderRadius: 4
+    // borderWidth: 0.5,
+    // borderColor: '#fff',
+    // borderRadius: 4
   },
   layerBottom: {
     flex: 1,

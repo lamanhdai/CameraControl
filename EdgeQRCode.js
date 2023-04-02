@@ -1,9 +1,9 @@
 import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
 
-const EdgeQRCode = ({position}) => {
+const EdgeQRCode = ({position, data}) => {
   const edgeWidth = 20;
   const edgeHeight = 20;
-  const edgeColor = '#fff'
+  const edgeColor = 'green'
   const edgeBorderWidth = 4
   const edgeRadius = 0
   const edgePosition = 4
@@ -18,29 +18,29 @@ const EdgeQRCode = ({position}) => {
       borderRightWidth: edgeBorderWidth,
       borderTopWidth: edgeBorderWidth,
       borderTopRightRadius: edgeRadius,
-      top: edgePosition,
-      right: edgePosition
+      top: data.Y||edgePosition,
+      right: data.X||edgePosition
     },
     topLeft: {
       borderLeftWidth: edgeBorderWidth,
       borderTopWidth: edgeBorderWidth,
       borderTopLeftRadius: edgeRadius,
-      top: edgePosition,
-      left: edgePosition
+      top: data.Y||edgePosition,
+      left: data.X||edgePosition
     },
     bottomRight: {
       borderRightWidth: edgeBorderWidth,
       borderBottomWidth: edgeBorderWidth,
       borderBottomRightRadius: edgeRadius,
-      Bottom: edgePosition,
-      right: edgePosition
+      bottom: data.Y||edgePosition,
+      right: data.X||edgePosition
     },
     bottomLeft: {
       borderLeftWidth: edgeBorderWidth,
       borderBottomWidth: edgeBorderWidth,
       borderBottomLeftRadius: edgeRadius,
-      Bottom: edgePosition,
-      left: edgePosition
+      bottom: data.Y||edgePosition,
+      left: data.X||edgePosition
     },
   }
 
