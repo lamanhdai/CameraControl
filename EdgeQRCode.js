@@ -19,7 +19,10 @@ const EdgeQRCode = ({position, data}) => {
       borderTopWidth: edgeBorderWidth,
       borderTopRightRadius: edgeRadius,
       top: data.Y||edgePosition,
-      right: data.X||edgePosition
+      right: data.X||edgePosition,
+      transform: [
+        { rotateX: Math.atan2(data.lastY - data.lastY, data.X - data.lastX) * 180 / Math.PI+"deg" }
+      ]
     },
     topLeft: {
       borderLeftWidth: edgeBorderWidth,
@@ -42,7 +45,9 @@ const EdgeQRCode = ({position, data}) => {
       bottom: data.Y||edgePosition,
       left: data.X||edgePosition
     },
+    
   }
+  console.log(data)
 
   return <View style={[defaultStyle, styles[`${position}Edge`], egdeBorderStyle[position]]}/>;
 }

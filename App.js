@@ -4,7 +4,7 @@ import { BarCodeScanner } from 'expo-barcode-scanner';
 
 import EdgeQRCode from './EdgeQRCode';
 
-const { width } = Dimensions.get('window');
+const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
 
 export default function App() {
   const [openedCamera, setOpenedCamera] = useState(false);
@@ -14,6 +14,8 @@ export default function App() {
   const scannerLine = useRef(new Animated.Value(0)).current;
   const [X, setX] = useState(0);
   const [Y, setY] = useState(0);
+  const [lastX, setLastX] = useState(0);
+  const [lastY, setLastY] = useState(0);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
 
@@ -39,13 +41,17 @@ export default function App() {
     }).start(() => updateAnimationScanLine());
   }
 
-  const handleBarCodeScanned = ({ type, data, bounds }) => {
+  const handleBarCodeScanned = ({ type, data, bounds,...rest }) => {
     setScanned(true);
     const {origin, size} = bounds;
-    setX(origin.x)
-    setY(origin.y)
-    setWidth(size.width)
-    setHeight(size.height)
+    setLastX(X)
+    setLastY(Y)
+    setX(Number.parseInt(origin.x))
+    setY(Number.parseInt(origin.y))
+    setWidth(Number.parseInt(size.width))
+    setHeight(Number.parseInt(size.height))
+    console.log(bounds)
+    console.log(rest)
     // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
   };
 
@@ -67,9 +73,8 @@ export default function App() {
 
   const transformLine = scannerLine.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, sizeQrCode?.height],
+    outputRange: [Y, Y+height],
   });
-  console.log(transformLine)
 
   return (
     <View style={styles.container}>
@@ -83,8 +88,8 @@ export default function App() {
           <View style={styles.layerCenter}>
             {/* <View style={styles.layerLeft}/> */}
             <View style={styles.layerFocus} onLayout={onLayoutView}>
-              <EdgeQRCode position={'topLeft'} data={{X,Y,width, height}}/>
-              <EdgeQRCode position={'topRight'} data={{X,Y,width, height}}/>
+              <EdgeQRCode position={'topLeft'} data={{X,Y,width, height, lastX, lastY}}/>
+              <EdgeQRCode position={'topRight'} data={{X,Y,width, height, lastX, lastY}}/>
               <Animated.View
                   style={[
                     {
@@ -93,13 +98,12 @@ export default function App() {
                     styles.scannerLine,
                     {
                       width: width,
-                      left: X,
-                      top: Y
+                      left: X
                     }
                   ]}
                 />
-              <EdgeQRCode position={'bottomLeft'} data={{X,Y,width, height}}/>
-              <EdgeQRCode position={'bottomRight'} data={{X,Y,width, height}}/>
+              <EdgeQRCode position={'bottomLeft'} data={{X,Y,width, height, lastX, lastY}}/>
+              <EdgeQRCode position={'bottomRight'} data={{X,Y,width, height, lastX, lastY}}/>
             </View>
             {/* <View style={styles.layerRight}/> */}
           </View>
