@@ -16,11 +16,31 @@ const EdgeQRCode = ({position, data}) => {
     width: 0,
     height: 0
   })
-  const theta = () => {
-    let result = Math.atan2(boundary.maxY - boundary.y, boundary.maxX - boundary.x);
-    if (result < 0)
-      result += 2 * Math.PI;
-    return Math.floor(result * 180 / Math.PI);
+  // const theta = () => {
+  //   let result = Math.atan2(boundary.maxY - boundary.y, boundary.maxX - boundary.x);
+  //   if (result < 0)
+  //     result += 2 * Math.PI;
+  //   return Math.floor(result * 180 / Math.PI);
+  // }
+
+  // Function to convert radians to degrees
+  function radians_to_degrees(radians) {
+    return radians * (180 / Math.PI);
+  }
+
+  // Function to find the distance between 2 points in a 3D plane
+  function dist(p1, p2) {
+    return Math.sqrt(
+        Math.pow(p1.x - p2.x, 2) +
+        Math.pow(p1.y - p2.y, 2)
+    ); 
+  }
+  function find_angle(A,B,C) {
+    var AB = dist(A,B);    
+    var BC = dist(B,C); 
+    var AC = dist(C,A);
+    
+    return Math.acos((BC*BC+AB*AB-AC*AC) / (2*BC*AB)) * (180 / Math.PI);   
   }
   const calculateAxis = () => {
     if(!data.cornerPointValue?.length) return;
@@ -66,9 +86,18 @@ const EdgeQRCode = ({position, data}) => {
       borderTopLeftRadius: edgeRadius,
       top: boundary.y||edgePosition,
       left: boundary.x||edgePosition,
-      transform: [
-        { rotate: (theta())+"deg" }
-      ]
+      // transform: [
+      //   { rotateZ: (
+      //     Math.floor(find_angle(
+      //       {x: data.lastX, y: data.lastY},
+      //       {x: boundary.x, y: boundary.maxY},
+      //       {x: boundary.maxX, y: boundary.maxY},
+      //     )) <= 90 ? 0 :Math.floor(find_angle(
+      //       {x: data.lastX, y: data.lastY},
+      //       {x: boundary.x, y: boundary.maxY},
+      //       {x: boundary.maxX, y: boundary.maxY},
+      //     )) )+"deg" }
+      // ]
     },
     bottomRight: {
       borderRightWidth: edgeBorderWidth,
@@ -77,7 +106,7 @@ const EdgeQRCode = ({position, data}) => {
       bottom: data.Y||edgePosition,
       right: data.X||edgePosition,
       transform: [
-        { rotateZ:  theta()+"deg" }
+        { rotateZ:  0+"deg" }
       ]
     },
     bottomLeft: {
@@ -87,7 +116,7 @@ const EdgeQRCode = ({position, data}) => {
       bottom: data.Y||edgePosition,
       left: data.X||edgePosition,
       transform: [
-        { rotateZ:  theta()+"deg" }
+        { rotateZ:  0+"deg" }
       ]
     },
     
@@ -95,7 +124,11 @@ const EdgeQRCode = ({position, data}) => {
   useEffect(() => {
     calculateAxis();
     console.log('boundary', boundary)
-    console.log(theta())
+    console.log(Math.floor(find_angle(
+      {x: data.lastX, y: data.lastY},
+      {x: boundary.x, y: boundary.maxY},
+      {x: boundary.maxX, y: boundary.maxY},
+          )))
   }, [data.cornerPointValue])
   
 

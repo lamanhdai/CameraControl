@@ -47,8 +47,8 @@ export default function App() {
       setScanned(true);
     }, 0)
     const {origin, size} = bounds;
-    setLastX(X)
-    setLastY(Y)
+    setLastX(Math.floor(cornerPointValue?.[0]?.x??0))
+    setLastY(Math.floor(cornerPointValue?.[0]?.y??0))
     setX(Number.parseInt(origin.x))
     setY(Number.parseInt(origin.y))
     setWidth(Number.parseInt(size.width))
