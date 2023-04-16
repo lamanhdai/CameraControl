@@ -1,4 +1,5 @@
 import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
+import { useEffect, useState } from 'react';
 
 const EdgeQRCode = ({position, data}) => {
   const edgeWidth = 20;
@@ -7,10 +8,42 @@ const EdgeQRCode = ({position, data}) => {
   const edgeBorderWidth = 4
   const edgeRadius = 0
   const edgePosition = 4
+  const [boundary, setBoundary] = useState({
+    x: 0,
+    y: 0,
+    maxX: 0,
+    maxY: 0,
+    width: 0,
+    height: 0
+  })
+  const theta = () => {
+    let result = Math.atan2(boundary.maxY - boundary.y, boundary.maxX - boundary.x);
+    if (result < 0)
+      result += 2 * Math.PI;
+    return Math.floor(result * 180 / Math.PI);
+  }
+  const calculateAxis = () => {
+    if(!data.cornerPointValue?.length) return;
+    let minX = 0, maxX = 0, minY = 0, maxY = 0;
+    data.cornerPointValue.map(item => {
+      minX = minX > Math.floor(item.x) || !minX ? Math.floor(item.x) : minX;
+      maxX = maxX < Math.floor(item.x) ? Math.floor(item.x) : maxX;
+      minY = minY > Math.floor(item.y) || !minY ? Math.floor(item.y) : minY;
+      maxY = maxY < Math.floor(item.y) ? Math.floor(item.y) : maxY;
+    });
+    setBoundary({
+      x: minX,
+      y: minY,
+      maxX,
+      maxY,
+      width: (maxX - minX),
+      height: (maxY - minY),
+    })
+  }
 
   const defaultStyle = {
-    width: edgeWidth,
-    height: edgeHeight,
+    width: boundary.width||edgeWidth,
+    height: boundary.height||edgeHeight,
     borderColor: edgeColor
   };
   const egdeBorderStyle = {
@@ -18,36 +51,53 @@ const EdgeQRCode = ({position, data}) => {
       borderRightWidth: edgeBorderWidth,
       borderTopWidth: edgeBorderWidth,
       borderTopRightRadius: edgeRadius,
-      top: data.Y||edgePosition,
-      right: data.X||edgePosition,
+      top: boundary.y||edgePosition,
+      right: boundary.x||edgePosition,
       transform: [
-        { rotateX: Math.atan2(data.lastY - data.lastY, data.X - data.lastX) * 180 / Math.PI+"deg" }
+        { rotate: "30deg" }
       ]
     },
     topLeft: {
       borderLeftWidth: edgeBorderWidth,
       borderTopWidth: edgeBorderWidth,
+      borderTopColor: 'red',
+      borderBottomWidth: edgeBorderWidth,
+      borderRightWidth: edgeBorderWidth,
       borderTopLeftRadius: edgeRadius,
-      top: data.Y||edgePosition,
-      left: data.X||edgePosition
+      top: boundary.y||edgePosition,
+      left: boundary.x||edgePosition,
+      transform: [
+        { rotate: (theta())+"deg" }
+      ]
     },
     bottomRight: {
       borderRightWidth: edgeBorderWidth,
       borderBottomWidth: edgeBorderWidth,
       borderBottomRightRadius: edgeRadius,
       bottom: data.Y||edgePosition,
-      right: data.X||edgePosition
+      right: data.X||edgePosition,
+      transform: [
+        { rotateZ:  theta()+"deg" }
+      ]
     },
     bottomLeft: {
       borderLeftWidth: edgeBorderWidth,
       borderBottomWidth: edgeBorderWidth,
       borderBottomLeftRadius: edgeRadius,
       bottom: data.Y||edgePosition,
-      left: data.X||edgePosition
+      left: data.X||edgePosition,
+      transform: [
+        { rotateZ:  theta()+"deg" }
+      ]
     },
     
   }
-  console.log(data)
+  useEffect(() => {
+    calculateAxis();
+    console.log('boundary', boundary)
+    console.log(theta())
+  }, [data.cornerPointValue])
+  
 
   return <View style={[defaultStyle, styles[`${position}Edge`], egdeBorderStyle[position]]}/>;
 }

@@ -18,6 +18,7 @@ export default function App() {
   const [lastY, setLastY] = useState(0);
   const [width, setWidth] = useState(0);
   const [height, setHeight] = useState(0);
+  const [cornerPointValue, setCornerPointValue] = useState([]);
 
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
@@ -41,8 +42,10 @@ export default function App() {
     }).start(() => updateAnimationScanLine());
   }
 
-  const handleBarCodeScanned = ({ type, data, bounds,...rest }) => {
-    setScanned(true);
+  const handleBarCodeScanned = ({ type, data, bounds, cornerPoints, ...rest }) => {
+    setTimeout(() => {
+      setScanned(true);
+    }, 0)
     const {origin, size} = bounds;
     setLastX(X)
     setLastY(Y)
@@ -50,8 +53,9 @@ export default function App() {
     setY(Number.parseInt(origin.y))
     setWidth(Number.parseInt(size.width))
     setHeight(Number.parseInt(size.height))
-    console.log(bounds)
-    console.log(rest)
+    setCornerPointValue(cornerPoints);
+    console.log('bounds',bounds)
+    console.log('cornerPoints',cornerPoints)
     // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
   };
 
@@ -88,8 +92,8 @@ export default function App() {
           <View style={styles.layerCenter}>
             {/* <View style={styles.layerLeft}/> */}
             <View style={styles.layerFocus} onLayout={onLayoutView}>
-              <EdgeQRCode position={'topLeft'} data={{X,Y,width, height, lastX, lastY}}/>
-              <EdgeQRCode position={'topRight'} data={{X,Y,width, height, lastX, lastY}}/>
+              <EdgeQRCode position={'topLeft'} data={{X,Y,width, height, lastX, lastY, cornerPointValue}}/>
+              {/* <EdgeQRCode position={'topRight'} data={{X,Y,width, height, lastX, lastY}}/> */}
               <Animated.View
                   style={[
                     {
@@ -102,8 +106,8 @@ export default function App() {
                     }
                   ]}
                 />
-              <EdgeQRCode position={'bottomLeft'} data={{X,Y,width, height, lastX, lastY}}/>
-              <EdgeQRCode position={'bottomRight'} data={{X,Y,width, height, lastX, lastY}}/>
+              {/* <EdgeQRCode position={'bottomLeft'} data={{X,Y,width, height, lastX, lastY}}/> */}
+              {/* <EdgeQRCode position={'bottomRight'} data={{X,Y,width, height, lastX, lastY}}/> */}
             </View>
             {/* <View style={styles.layerRight}/> */}
           </View>
