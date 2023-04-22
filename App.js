@@ -1,23 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button, StyleSheet, Text, View, Dimensions, Animated } from 'react-native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import {
+  Canvas,
+  Points,
+  vec,
+} from "@shopify/react-native-skia";
+import AnimatedLine from './AnimatedLine';
 
-import EdgeQRCode from './EdgeQRCode';
-
-const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
+// const { width: deviceWidth, height: deviceHeight } = Dimensions.get('window');
 
 export default function App() {
   const [openedCamera, setOpenedCamera] = useState(false);
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [sizeQrCode, setSizeQrCode] = useState({width: 0, height: 0})
   const scannerLine = useRef(new Animated.Value(0)).current;
-  const [X, setX] = useState(0);
-  const [Y, setY] = useState(0);
-  const [lastX, setLastX] = useState(0);
-  const [lastY, setLastY] = useState(0);
-  const [width, setWidth] = useState(0);
-  const [height, setHeight] = useState(0);
   const [cornerPointValue, setCornerPointValue] = useState([]);
 
   useEffect(() => {
@@ -29,34 +26,12 @@ export default function App() {
     getBarCodeScannerPermissions();
   }, []);
 
-  useEffect(() => {
-    updateAnimationScanLine();
-  }, []);
-
-  const updateAnimationScanLine = () => {
-    scannerLine.setValue(0);
-    Animated.timing(scannerLine, {
-      toValue: 1,
-      duration: 8000,
-      useNativeDriver: false,
-    }).start(() => updateAnimationScanLine());
-  }
-
   const handleBarCodeScanned = ({ type, data, bounds, cornerPoints, ...rest }) => {
+    if(scanned) return
+    setCornerPointValue(cornerPoints);
     setTimeout(() => {
       setScanned(true);
-    }, 0)
-    const {origin, size} = bounds;
-    setLastX(Math.floor(cornerPointValue?.[0]?.x??0))
-    setLastY(Math.floor(cornerPointValue?.[0]?.y??0))
-    setX(Number.parseInt(origin.x))
-    setY(Number.parseInt(origin.y))
-    setWidth(Number.parseInt(size.width))
-    setHeight(Number.parseInt(size.height))
-    setCornerPointValue(cornerPoints);
-    console.log('bounds',bounds)
-    console.log('cornerPoints',cornerPoints)
-    // alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    }, 3000)
   };
 
   if (hasPermission === null) {
@@ -70,48 +45,37 @@ export default function App() {
     setOpenedCamera(true);
   }
 
-  const onLayoutView = (event) => {
-    const { height, width } = event.nativeEvent.layout
-    setSizeQrCode({ width: width, height: height });
-  }
-
-  const transformLine = scannerLine.interpolate({
-    inputRange: [0, 1],
-    outputRange: [Y, Y+height],
-  });
-
   return (
     <View style={styles.container}>
       {openedCamera&&
         <BarCodeScanner
-          // onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
           onBarCodeScanned={handleBarCodeScanned}
           style={[StyleSheet.absoluteFillObject, styles.camera]}
         >
-          {/* <View style={styles.layerTop}/> */}
           <View style={styles.layerCenter}>
-            {/* <View style={styles.layerLeft}/> */}
-            <View style={styles.layerFocus} onLayout={onLayoutView}>
-              <EdgeQRCode position={'topLeft'} data={{X,Y,width, height, lastX, lastY, cornerPointValue}}/>
-              {/* <EdgeQRCode position={'topRight'} data={{X,Y,width, height, lastX, lastY}}/> */}
-              <Animated.View
-                  style={[
-                    {
-                      transform: [{ translateY: transformLine }],
-                    },
-                    styles.scannerLine,
-                    {
-                      width: width,
-                      left: X
-                    }
-                  ]}
+            <View style={styles.layerFocus}>
+              <Canvas style={{ flex: 1 }}>
+                <AnimatedLine
+                  cornerPointValue={cornerPointValue}
                 />
-              {/* <EdgeQRCode position={'bottomLeft'} data={{X,Y,width, height, lastX, lastY}}/> */}
-              {/* <EdgeQRCode position={'bottomRight'} data={{X,Y,width, height, lastX, lastY}}/> */}
+                <Points
+                  points={
+                    [
+                      vec(Number(cornerPointValue[0]?.x??0), Number(cornerPointValue[0]?.y??0)),
+                      vec(Number(cornerPointValue[1]?.x??0), Number(cornerPointValue[1]?.y??0)),
+                      vec(Number(cornerPointValue[2]?.x??0), Number(cornerPointValue[2]?.y??0)),
+                      vec(Number(cornerPointValue[3]?.x??0), Number(cornerPointValue[3]?.y??0)),
+                      vec(Number(cornerPointValue[0]?.x??0), Number(cornerPointValue[0]?.y??0)),
+                    ]
+                  }
+                  mode="polygon"
+                  color="navy"
+                  style="stroke"
+                  strokeWidth={2}
+                />
+              </Canvas>
             </View>
-            {/* <View style={styles.layerRight}/> */}
           </View>
-          {/* <View style={styles.layerBottom}/> */}
         </BarCodeScanner>
       }
       {scanned && <Button title={'Tap to Scan Again'} onPress={() => setScanned(false)} />}
