@@ -29,9 +29,9 @@ export default function App() {
   const handleBarCodeScanned = ({ type, data, bounds, cornerPoints, ...rest }) => {
     if(scanned) return
     setCornerPointValue(cornerPoints);
-    setTimeout(() => {
-      setScanned(true);
-    }, 3000)
+    // setTimeout(() => {
+    //   setScanned(true);
+    // }, 3000)
   };
 
   if (hasPermission === null) {
